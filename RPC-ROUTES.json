@@ -1,0 +1,1179 @@
+[
+  {
+    "service": "auth",
+    "rabbitQueue": "auth_rpc",
+    "pattern": "auth.rpc.v1",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/",
+        "controller": "AppController",
+        "handler": "getHello"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/google",
+        "controller": "AuthController",
+        "handler": "login"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/logout",
+        "controller": "AuthController",
+        "handler": "logout"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/logout-all",
+        "controller": "AuthController",
+        "handler": "logoutAll"
+      },
+      {
+        "method": "GET",
+        "path": "/auth/me",
+        "controller": "AuthController",
+        "handler": "me"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/refresh",
+        "controller": "AuthController",
+        "handler": "refresh"
+      },
+      {
+        "method": "GET",
+        "path": "/auth/sessions",
+        "controller": "AuthController",
+        "handler": "sessions"
+      },
+      {
+        "method": "DELETE",
+        "path": "/auth/sessions/:sessionId",
+        "controller": "AuthController",
+        "handler": "revokeSession"
+      },
+      {
+        "method": "GET",
+        "path": "/health/live",
+        "controller": "AuthHealthController",
+        "handler": "live"
+      },
+      {
+        "method": "GET",
+        "path": "/health/ready",
+        "controller": "AuthHealthController",
+        "handler": "ready"
+      }
+    ]
+  },
+  {
+    "service": "roles",
+    "rabbitQueue": "roles_rpc",
+    "pattern": "roles.rpc.v1",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/",
+        "controller": "AppController",
+        "handler": "getHello"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/roles",
+        "controller": "AdminRolesController",
+        "handler": "list"
+      },
+      {
+        "method": "POST",
+        "path": "/admin/roles",
+        "controller": "AdminRolesController",
+        "handler": "create"
+      },
+      {
+        "method": "DELETE",
+        "path": "/admin/roles/:id",
+        "controller": "AdminRolesController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/roles/:id",
+        "controller": "AdminRolesController",
+        "handler": "get"
+      },
+      {
+        "method": "PATCH",
+        "path": "/admin/roles/:id",
+        "controller": "AdminRolesController",
+        "handler": "update"
+      },
+      {
+        "method": "PATCH",
+        "path": "/admin/roles/:id/activate",
+        "controller": "AdminRolesController",
+        "handler": "activate"
+      },
+      {
+        "method": "PATCH",
+        "path": "/admin/roles/:id/deactivate",
+        "controller": "AdminRolesController",
+        "handler": "deactivate"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/roles/:id/permissions",
+        "controller": "AdminRolesController",
+        "handler": "permissions"
+      },
+      {
+        "method": "PUT",
+        "path": "/admin/roles/:id/permissions",
+        "controller": "AdminRolesController",
+        "handler": "setPermissions"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/roles/by-name/:name",
+        "controller": "AdminRolesController",
+        "handler": "byName"
+      },
+      {
+        "method": "GET",
+        "path": "/roles",
+        "controller": "RolesController",
+        "handler": "list"
+      },
+      {
+        "method": "POST",
+        "path": "/roles",
+        "controller": "RolesController",
+        "handler": "create"
+      },
+      {
+        "method": "DELETE",
+        "path": "/roles/:id",
+        "controller": "RolesController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/roles/:id",
+        "controller": "RolesController",
+        "handler": "get"
+      },
+      {
+        "method": "PATCH",
+        "path": "/roles/:id",
+        "controller": "RolesController",
+        "handler": "update"
+      },
+      {
+        "method": "PATCH",
+        "path": "/roles/:id/activate",
+        "controller": "RolesController",
+        "handler": "activate"
+      },
+      {
+        "method": "PATCH",
+        "path": "/roles/:id/deactivate",
+        "controller": "RolesController",
+        "handler": "deactivate"
+      },
+      {
+        "method": "GET",
+        "path": "/roles/:id/permissions",
+        "controller": "RolesController",
+        "handler": "permissions"
+      },
+      {
+        "method": "PUT",
+        "path": "/roles/:id/permissions",
+        "controller": "RolesController",
+        "handler": "setPermissions"
+      },
+      {
+        "method": "GET",
+        "path": "/roles/by-name/:name",
+        "controller": "RolesController",
+        "handler": "byName"
+      }
+    ]
+  },
+  {
+    "service": "permissions",
+    "rabbitQueue": "permissions_rpc",
+    "pattern": "permissions.rpc.v1",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/",
+        "controller": "AppController",
+        "handler": "getHello"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/permissions",
+        "controller": "AdminPermissionsController",
+        "handler": "list"
+      },
+      {
+        "method": "POST",
+        "path": "/admin/permissions",
+        "controller": "AdminPermissionsController",
+        "handler": "create"
+      },
+      {
+        "method": "DELETE",
+        "path": "/admin/permissions/:id",
+        "controller": "AdminPermissionsController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/permissions/:id",
+        "controller": "AdminPermissionsController",
+        "handler": "get"
+      },
+      {
+        "method": "PATCH",
+        "path": "/admin/permissions/:id",
+        "controller": "AdminPermissionsController",
+        "handler": "update"
+      },
+      {
+        "method": "PATCH",
+        "path": "/admin/permissions/:id/activate",
+        "controller": "AdminPermissionsController",
+        "handler": "activate"
+      },
+      {
+        "method": "PATCH",
+        "path": "/admin/permissions/:id/deactivate",
+        "controller": "AdminPermissionsController",
+        "handler": "deactivate"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/permissions/by-name/:name",
+        "controller": "AdminPermissionsController",
+        "handler": "byName"
+      },
+      {
+        "method": "GET",
+        "path": "/permissions",
+        "controller": "PermissionsController",
+        "handler": "list"
+      },
+      {
+        "method": "POST",
+        "path": "/permissions",
+        "controller": "PermissionsController",
+        "handler": "create"
+      },
+      {
+        "method": "DELETE",
+        "path": "/permissions/:id",
+        "controller": "PermissionsController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/permissions/:id",
+        "controller": "PermissionsController",
+        "handler": "get"
+      },
+      {
+        "method": "PATCH",
+        "path": "/permissions/:id",
+        "controller": "PermissionsController",
+        "handler": "update"
+      },
+      {
+        "method": "PATCH",
+        "path": "/permissions/:id/activate",
+        "controller": "PermissionsController",
+        "handler": "activate"
+      },
+      {
+        "method": "PATCH",
+        "path": "/permissions/:id/deactivate",
+        "controller": "PermissionsController",
+        "handler": "deactivate"
+      },
+      {
+        "method": "GET",
+        "path": "/permissions/by-name/:name",
+        "controller": "PermissionsController",
+        "handler": "byName"
+      }
+    ]
+  },
+  {
+    "service": "resources",
+    "rabbitQueue": "resources_rpc",
+    "pattern": "resources.rpc.v1",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/",
+        "controller": "AppController",
+        "handler": "getHello"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/resources",
+        "controller": "AdminResourcesController",
+        "handler": "list"
+      },
+      {
+        "method": "POST",
+        "path": "/admin/resources",
+        "controller": "AdminResourcesController",
+        "handler": "create"
+      },
+      {
+        "method": "DELETE",
+        "path": "/admin/resources/:id",
+        "controller": "AdminResourcesController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/resources/:id",
+        "controller": "AdminResourcesController",
+        "handler": "get"
+      },
+      {
+        "method": "PATCH",
+        "path": "/admin/resources/:id",
+        "controller": "AdminResourcesController",
+        "handler": "update"
+      },
+      {
+        "method": "DELETE",
+        "path": "/admin/resources/:id/file",
+        "controller": "AdminResourceFilesController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/resources/:id/file",
+        "controller": "AdminResourceFilesController",
+        "handler": "read"
+      },
+      {
+        "method": "POST",
+        "path": "/admin/resources/:id/file",
+        "controller": "AdminResourceFilesController",
+        "handler": "create"
+      },
+      {
+        "method": "PUT",
+        "path": "/admin/resources/:id/file",
+        "controller": "AdminResourceFilesController",
+        "handler": "replace"
+      },
+      {
+        "method": "DELETE",
+        "path": "/admin/resources/:id/image",
+        "controller": "AdminResourceImageController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/resources/:id/image",
+        "controller": "AdminResourceImageController",
+        "handler": "read"
+      },
+      {
+        "method": "POST",
+        "path": "/admin/resources/:id/image",
+        "controller": "AdminResourceImageController",
+        "handler": "upload"
+      },
+      {
+        "method": "PUT",
+        "path": "/admin/resources/:id/image",
+        "controller": "AdminResourceImageController",
+        "handler": "replace"
+      },
+      {
+        "method": "PUT",
+        "path": "/admin/resources/:id/url",
+        "controller": "AdminResourceFilesController",
+        "handler": "setUrl"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/resources/by-name/:name",
+        "controller": "AdminResourcesController",
+        "handler": "byName"
+      },
+      {
+        "method": "GET",
+        "path": "/area-admin/areas/:area/resources",
+        "controller": "AreaResourcesController",
+        "handler": "list"
+      },
+      {
+        "method": "POST",
+        "path": "/area-admin/areas/:area/resources",
+        "controller": "AreaResourcesController",
+        "handler": "create"
+      },
+      {
+        "method": "DELETE",
+        "path": "/area-admin/areas/:area/resources/:id",
+        "controller": "AreaResourcesController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/area-admin/areas/:area/resources/:id",
+        "controller": "AreaResourcesController",
+        "handler": "get"
+      },
+      {
+        "method": "PATCH",
+        "path": "/area-admin/areas/:area/resources/:id",
+        "controller": "AreaResourcesController",
+        "handler": "update"
+      },
+      {
+        "method": "DELETE",
+        "path": "/area-admin/areas/:area/resources/:id/file",
+        "controller": "AreaResourceFilesController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/area-admin/areas/:area/resources/:id/file",
+        "controller": "AreaResourceFilesController",
+        "handler": "read"
+      },
+      {
+        "method": "POST",
+        "path": "/area-admin/areas/:area/resources/:id/file",
+        "controller": "AreaResourceFilesController",
+        "handler": "create"
+      },
+      {
+        "method": "PUT",
+        "path": "/area-admin/areas/:area/resources/:id/file",
+        "controller": "AreaResourceFilesController",
+        "handler": "replace"
+      },
+      {
+        "method": "DELETE",
+        "path": "/area-admin/areas/:area/resources/:id/image",
+        "controller": "AreaResourceImageController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/area-admin/areas/:area/resources/:id/image",
+        "controller": "AreaResourceImageController",
+        "handler": "read"
+      },
+      {
+        "method": "POST",
+        "path": "/area-admin/areas/:area/resources/:id/image",
+        "controller": "AreaResourceImageController",
+        "handler": "upload"
+      },
+      {
+        "method": "PUT",
+        "path": "/area-admin/areas/:area/resources/:id/image",
+        "controller": "AreaResourceImageController",
+        "handler": "replace"
+      },
+      {
+        "method": "PUT",
+        "path": "/area-admin/areas/:area/resources/:id/url",
+        "controller": "AreaResourceFilesController",
+        "handler": "setUrl"
+      },
+      {
+        "method": "GET",
+        "path": "/area-admin/areas/:area/resources/by-name/:name",
+        "controller": "AreaResourcesController",
+        "handler": "byName"
+      },
+      {
+        "method": "GET",
+        "path": "/area-user/areas/:area/resources",
+        "controller": "UserResourcesController",
+        "handler": "list"
+      },
+      {
+        "method": "POST",
+        "path": "/area-user/areas/:area/resources",
+        "controller": "UserResourcesController",
+        "handler": "create"
+      },
+      {
+        "method": "DELETE",
+        "path": "/area-user/areas/:area/resources/:id",
+        "controller": "UserResourcesController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/area-user/areas/:area/resources/:id",
+        "controller": "UserResourcesController",
+        "handler": "get"
+      },
+      {
+        "method": "PATCH",
+        "path": "/area-user/areas/:area/resources/:id",
+        "controller": "UserResourcesController",
+        "handler": "update"
+      },
+      {
+        "method": "DELETE",
+        "path": "/area-user/areas/:area/resources/:id/file",
+        "controller": "ResourceFilesController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/area-user/areas/:area/resources/:id/file",
+        "controller": "ResourceFilesController",
+        "handler": "read"
+      },
+      {
+        "method": "POST",
+        "path": "/area-user/areas/:area/resources/:id/file",
+        "controller": "ResourceFilesController",
+        "handler": "create"
+      },
+      {
+        "method": "PUT",
+        "path": "/area-user/areas/:area/resources/:id/file",
+        "controller": "ResourceFilesController",
+        "handler": "replace"
+      },
+      {
+        "method": "DELETE",
+        "path": "/area-user/areas/:area/resources/:id/image",
+        "controller": "UserResourceImageController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/area-user/areas/:area/resources/:id/image",
+        "controller": "UserResourceImageController",
+        "handler": "read"
+      },
+      {
+        "method": "POST",
+        "path": "/area-user/areas/:area/resources/:id/image",
+        "controller": "UserResourceImageController",
+        "handler": "upload"
+      },
+      {
+        "method": "PUT",
+        "path": "/area-user/areas/:area/resources/:id/image",
+        "controller": "UserResourceImageController",
+        "handler": "replace"
+      },
+      {
+        "method": "PUT",
+        "path": "/area-user/areas/:area/resources/:id/url",
+        "controller": "ResourceFilesController",
+        "handler": "setUrl"
+      },
+      {
+        "method": "GET",
+        "path": "/area-user/areas/:area/resources/by-name/:name",
+        "controller": "UserResourcesController",
+        "handler": "byName"
+      },
+      {
+        "method": "GET",
+        "path": "/resources",
+        "controller": "ResourcesController",
+        "handler": "list"
+      },
+      {
+        "method": "POST",
+        "path": "/resources",
+        "controller": "ResourcesController",
+        "handler": "create"
+      },
+      {
+        "method": "DELETE",
+        "path": "/resources/:id",
+        "controller": "ResourcesController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/resources/:id",
+        "controller": "ResourcesController",
+        "handler": "get"
+      },
+      {
+        "method": "PATCH",
+        "path": "/resources/:id",
+        "controller": "ResourcesController",
+        "handler": "update"
+      },
+      {
+        "method": "DELETE",
+        "path": "/resources/:id/file",
+        "controller": "ResourceFilesController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/resources/:id/file",
+        "controller": "ResourceFilesController",
+        "handler": "read"
+      },
+      {
+        "method": "POST",
+        "path": "/resources/:id/file",
+        "controller": "ResourceFilesController",
+        "handler": "create"
+      },
+      {
+        "method": "PUT",
+        "path": "/resources/:id/file",
+        "controller": "ResourceFilesController",
+        "handler": "replace"
+      },
+      {
+        "method": "DELETE",
+        "path": "/resources/:id/image",
+        "controller": "UserResourceImageController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/resources/:id/image",
+        "controller": "UserResourceImageController",
+        "handler": "read"
+      },
+      {
+        "method": "POST",
+        "path": "/resources/:id/image",
+        "controller": "UserResourceImageController",
+        "handler": "upload"
+      },
+      {
+        "method": "PUT",
+        "path": "/resources/:id/image",
+        "controller": "UserResourceImageController",
+        "handler": "replace"
+      },
+      {
+        "method": "PUT",
+        "path": "/resources/:id/url",
+        "controller": "ResourceFilesController",
+        "handler": "setUrl"
+      },
+      {
+        "method": "GET",
+        "path": "/resources/by-name/:name",
+        "controller": "ResourcesController",
+        "handler": "byName"
+      }
+    ]
+  },
+  {
+    "service": "areas",
+    "rabbitQueue": "areas_rpc",
+    "pattern": "areas.rpc.v1",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/",
+        "controller": "AppController",
+        "handler": "getHello"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/areas",
+        "controller": "AdminAreasController",
+        "handler": "list"
+      },
+      {
+        "method": "POST",
+        "path": "/admin/areas",
+        "controller": "AdminAreasController",
+        "handler": "create"
+      },
+      {
+        "method": "DELETE",
+        "path": "/admin/areas/:id",
+        "controller": "AdminAreasController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/areas/:id",
+        "controller": "AdminAreasController",
+        "handler": "get"
+      },
+      {
+        "method": "PATCH",
+        "path": "/admin/areas/:id",
+        "controller": "AdminAreasController",
+        "handler": "update"
+      },
+      {
+        "method": "PATCH",
+        "path": "/admin/areas/:id/activate",
+        "controller": "AdminAreasController",
+        "handler": "activate"
+      },
+      {
+        "method": "PATCH",
+        "path": "/admin/areas/:id/deactivate",
+        "controller": "AdminAreasController",
+        "handler": "deactivate"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/areas/by-name/:name",
+        "controller": "AdminAreasController",
+        "handler": "byName"
+      },
+      {
+        "method": "GET",
+        "path": "/areas",
+        "controller": "AreasController",
+        "handler": "list"
+      },
+      {
+        "method": "POST",
+        "path": "/areas",
+        "controller": "AreasController",
+        "handler": "create"
+      },
+      {
+        "method": "DELETE",
+        "path": "/areas/:id",
+        "controller": "AreasController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/areas/:id",
+        "controller": "AreasController",
+        "handler": "get"
+      },
+      {
+        "method": "PATCH",
+        "path": "/areas/:id",
+        "controller": "AreasController",
+        "handler": "update"
+      },
+      {
+        "method": "PATCH",
+        "path": "/areas/:id/activate",
+        "controller": "AreasController",
+        "handler": "activate"
+      },
+      {
+        "method": "PATCH",
+        "path": "/areas/:id/deactivate",
+        "controller": "AreasController",
+        "handler": "deactivate"
+      },
+      {
+        "method": "GET",
+        "path": "/areas/by-name/:name",
+        "controller": "AreasController",
+        "handler": "byName"
+      }
+    ]
+  },
+  {
+    "service": "users",
+    "rabbitQueue": "users_rpc",
+    "pattern": "users.rpc.v1",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/",
+        "controller": "AppController",
+        "handler": "getHello"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/users",
+        "controller": "AdminUsersController",
+        "handler": "list"
+      },
+      {
+        "method": "POST",
+        "path": "/admin/users",
+        "controller": "AdminUsersController",
+        "handler": "create"
+      },
+      {
+        "method": "DELETE",
+        "path": "/admin/users/:id",
+        "controller": "AdminUsersController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/users/:id",
+        "controller": "AdminUsersController",
+        "handler": "get"
+      },
+      {
+        "method": "PATCH",
+        "path": "/admin/users/:id",
+        "controller": "AdminUsersController",
+        "handler": "update"
+      },
+      {
+        "method": "PATCH",
+        "path": "/admin/users/:id/activate",
+        "controller": "AdminUsersController",
+        "handler": "activate"
+      },
+      {
+        "method": "DELETE",
+        "path": "/admin/users/:id/avatar",
+        "controller": "AdminAvatarController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/users/:id/avatar",
+        "controller": "AdminAvatarController",
+        "handler": "read"
+      },
+      {
+        "method": "POST",
+        "path": "/admin/users/:id/avatar",
+        "controller": "AdminAvatarController",
+        "handler": "upload"
+      },
+      {
+        "method": "PUT",
+        "path": "/admin/users/:id/avatar",
+        "controller": "AdminAvatarController",
+        "handler": "replace"
+      },
+      {
+        "method": "PATCH",
+        "path": "/admin/users/:id/deactivate",
+        "controller": "AdminUsersController",
+        "handler": "deactivate"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/users/by-name/:name",
+        "controller": "AdminUsersController",
+        "handler": "byName"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/users/me",
+        "controller": "AdminUsersController",
+        "handler": "me"
+      },
+      {
+        "method": "GET",
+        "path": "/area-admin/areas/:area/users",
+        "controller": "AreaUsersController",
+        "handler": "list"
+      },
+      {
+        "method": "POST",
+        "path": "/area-admin/areas/:area/users",
+        "controller": "AreaUsersController",
+        "handler": "create"
+      },
+      {
+        "method": "DELETE",
+        "path": "/area-admin/areas/:area/users/:id",
+        "controller": "AreaUsersController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/area-admin/areas/:area/users/:id",
+        "controller": "AreaUsersController",
+        "handler": "get"
+      },
+      {
+        "method": "PATCH",
+        "path": "/area-admin/areas/:area/users/:id",
+        "controller": "AreaUsersController",
+        "handler": "update"
+      },
+      {
+        "method": "PATCH",
+        "path": "/area-admin/areas/:area/users/:id/activate",
+        "controller": "AreaUsersController",
+        "handler": "activate"
+      },
+      {
+        "method": "DELETE",
+        "path": "/area-admin/areas/:area/users/:id/avatar",
+        "controller": "AreaAvatarController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/area-admin/areas/:area/users/:id/avatar",
+        "controller": "AreaAvatarController",
+        "handler": "read"
+      },
+      {
+        "method": "POST",
+        "path": "/area-admin/areas/:area/users/:id/avatar",
+        "controller": "AreaAvatarController",
+        "handler": "upload"
+      },
+      {
+        "method": "PUT",
+        "path": "/area-admin/areas/:area/users/:id/avatar",
+        "controller": "AreaAvatarController",
+        "handler": "replace"
+      },
+      {
+        "method": "PATCH",
+        "path": "/area-admin/areas/:area/users/:id/deactivate",
+        "controller": "AreaUsersController",
+        "handler": "deactivate"
+      },
+      {
+        "method": "GET",
+        "path": "/area-admin/areas/:area/users/by-name/:name",
+        "controller": "AreaUsersController",
+        "handler": "byName"
+      },
+      {
+        "method": "GET",
+        "path": "/users",
+        "controller": "UsersController",
+        "handler": "list"
+      },
+      {
+        "method": "POST",
+        "path": "/users",
+        "controller": "UsersController",
+        "handler": "create"
+      },
+      {
+        "method": "DELETE",
+        "path": "/users/:id",
+        "controller": "UsersController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/users/:id",
+        "controller": "UsersController",
+        "handler": "get"
+      },
+      {
+        "method": "PATCH",
+        "path": "/users/:id",
+        "controller": "UsersController",
+        "handler": "update"
+      },
+      {
+        "method": "PATCH",
+        "path": "/users/:id/activate",
+        "controller": "UsersController",
+        "handler": "activate"
+      },
+      {
+        "method": "DELETE",
+        "path": "/users/:id/avatar",
+        "controller": "AdminAvatarController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/users/:id/avatar",
+        "controller": "AdminAvatarController",
+        "handler": "read"
+      },
+      {
+        "method": "POST",
+        "path": "/users/:id/avatar",
+        "controller": "AdminAvatarController",
+        "handler": "upload"
+      },
+      {
+        "method": "PUT",
+        "path": "/users/:id/avatar",
+        "controller": "AdminAvatarController",
+        "handler": "replace"
+      },
+      {
+        "method": "PATCH",
+        "path": "/users/:id/deactivate",
+        "controller": "UsersController",
+        "handler": "deactivate"
+      },
+      {
+        "method": "GET",
+        "path": "/users/by-name/:name",
+        "controller": "UsersController",
+        "handler": "byName"
+      },
+      {
+        "method": "GET",
+        "path": "/users/me",
+        "controller": "UsersController",
+        "handler": "me"
+      },
+      {
+        "method": "DELETE",
+        "path": "/users/me/avatar",
+        "controller": "MyAvatarController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/users/me/avatar",
+        "controller": "MyAvatarController",
+        "handler": "read"
+      },
+      {
+        "method": "POST",
+        "path": "/users/me/avatar",
+        "controller": "MyAvatarController",
+        "handler": "upload"
+      },
+      {
+        "method": "PUT",
+        "path": "/users/me/avatar",
+        "controller": "MyAvatarController",
+        "handler": "replace"
+      }
+    ]
+  },
+  {
+    "service": "audit",
+    "rabbitQueue": "audit_rpc",
+    "pattern": "audit.rpc.v1",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/",
+        "controller": "AppController",
+        "handler": "getHello"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/audit",
+        "controller": "AdminAuditController",
+        "handler": "list"
+      },
+      {
+        "method": "POST",
+        "path": "/admin/audit",
+        "controller": "AdminAuditController",
+        "handler": "create"
+      },
+      {
+        "method": "DELETE",
+        "path": "/admin/audit/:id",
+        "controller": "AdminAuditController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/audit/:id",
+        "controller": "AdminAuditController",
+        "handler": "get"
+      },
+      {
+        "method": "PATCH",
+        "path": "/admin/audit/:id",
+        "controller": "AdminAuditController",
+        "handler": "update"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/audit/by-action/:action",
+        "controller": "AdminAuditController",
+        "handler": "byAction"
+      },
+      {
+        "method": "GET",
+        "path": "/area-admin/areas/:area/audit",
+        "controller": "AreaAuditController",
+        "handler": "list"
+      },
+      {
+        "method": "POST",
+        "path": "/area-admin/areas/:area/audit",
+        "controller": "AreaAuditController",
+        "handler": "create"
+      },
+      {
+        "method": "DELETE",
+        "path": "/area-admin/areas/:area/audit/:id",
+        "controller": "AreaAuditController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/area-admin/areas/:area/audit/:id",
+        "controller": "AreaAuditController",
+        "handler": "get"
+      },
+      {
+        "method": "PATCH",
+        "path": "/area-admin/areas/:area/audit/:id",
+        "controller": "AreaAuditController",
+        "handler": "update"
+      },
+      {
+        "method": "GET",
+        "path": "/area-admin/areas/:area/audit/by-action/:action",
+        "controller": "AreaAuditController",
+        "handler": "byAction"
+      },
+      {
+        "method": "GET",
+        "path": "/audit",
+        "controller": "AuditHttpController",
+        "handler": "list"
+      },
+      {
+        "method": "POST",
+        "path": "/audit",
+        "controller": "AuditHttpController",
+        "handler": "create"
+      },
+      {
+        "method": "DELETE",
+        "path": "/audit/:id",
+        "controller": "AuditHttpController",
+        "handler": "remove"
+      },
+      {
+        "method": "GET",
+        "path": "/audit/:id",
+        "controller": "AuditHttpController",
+        "handler": "get"
+      },
+      {
+        "method": "PATCH",
+        "path": "/audit/:id",
+        "controller": "AuditHttpController",
+        "handler": "update"
+      },
+      {
+        "method": "GET",
+        "path": "/audit/by-action/:action",
+        "controller": "AuditHttpController",
+        "handler": "byAction"
+      }
+    ]
+  }
+]

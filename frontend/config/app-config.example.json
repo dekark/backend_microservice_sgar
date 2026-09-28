@@ -1,0 +1,4 @@
+{
+  "googleClientId": "",
+  "api": { "auth": "/api/auth", "roles": "/api/roles", "permissions": "/api/permissions", "resources": "/api/resources", "areas": "/api/areas", "users": "/api/users", "audit": "/api/audit" }
+}

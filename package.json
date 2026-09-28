@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.4"
+  },
+  "scripts": {
+    "backend:build": "node scripts/check-backend.cjs build",
+    "backend:test": "node scripts/check-backend.cjs test",
+    "backend:check": "node scripts/check-backend.cjs check",
+    "rpc:call": "node scripts/rpc-call.cjs",
+    "rpc:routes": "node scripts/list-rpc-routes.cjs",
+    "brokers:local": "node scripts/auth-local.cjs brokers",
+    "test:audit:offline": "node scripts/test-audit-offline.cjs",
+    "env:configure": "node scripts/configure-env.cjs",
+    "auth:local": "node scripts/auth-local.cjs up",
+    "backend:up": "node scripts/auth-local.cjs up",
+    "auth:local:stop": "node scripts/auth-local.cjs down",
+    "auth:local:logs": "node scripts/auth-local.cjs logs",
+    "auth:local:status": "node scripts/auth-local.cjs status",
+    "auth:local:check": "node scripts/auth-local.cjs check",
+    "frontend:dev": "npm --prefix frontend start",
+    "frontend:build": "npm --prefix frontend run build",
+    "frontend:test": "npm --prefix frontend test"
+  }
+}

@@ -1,0 +1,308 @@
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">{{
+      scope === 'admin' ? 'GESTIÓN DE LA ORGANIZACIÓN' : 'MI ÁREA DE TRABAJO'
+    }}</span>
+    <h1>{{ definition.title }}</h1>
+    <p class="muted">{{ definition.subtitle }}</p>
+  </div>
+  <button class="primary" [disabled]="saving()" (click)="edit()">
+    ＋ Crear {{ definition.singular }}
+  </button>
+</div>
+@if (notice()) {
+  <div class="alert success" role="status">
+    {{ notice()
+    }}<button class="icon-button" aria-label="Cerrar aviso" (click)="notice.set('')">×</button>
+  </div>
+}
+@if (error()) {
+  <div class="alert error" role="alert">
+    {{ error()
+    }}<button class="secondary" (click)="load()" [disabled]="loading()">Reintentar</button>
+  </div>
+}
+<section class="panel collection-panel">
+  <div class="section-heading">
+    <h2>
+      Todos los registros <span class="count-badge">{{ page()?.total ?? '—' }}</span>
+    </h2>
+    <button class="quiet-button" (click)="load()" [disabled]="loading()">↻ Actualizar</button>
+  </div>
+  <form class="search-bar" (ngSubmit)="search()">
+    <label class="search-input"
+      ><span class="sr-only">Buscar</span><span aria-hidden="true">⌕</span
+      ><input
+        name="search"
+        [(ngModel)]="q"
+        maxlength="200"
+        [placeholder]="
+          mode === 'id' ? 'Escribe el ID…' : 'Buscar ' + definition.title.toLowerCase() + '…'
+        " /></label
+    ><label
+      ><span class="sr-only">Tipo de búsqueda</span
+      ><select name="mode" [(ngModel)]="mode">
+        <option value="text">Texto libre</option>
+        <option value="name">{{ entity === 'audit' ? 'Acción exacta' : 'Nombre exacto' }}</option>
+        <option value="id">Por ID</option>
+      </select></label
+    ><button class="primary" [disabled]="loading()">Buscar</button>
+  </form>
+  <form class="filter-bar" (ngSubmit)="search()">
+    <label
+      >Filtrar por<select name="filter" [(ngModel)]="filter">
+        <option value="">Sin filtro</option>
+        @for (key of definition.filters; track key) {
+          @if (scope === 'admin' || key !== 'areaId') {
+            <option [value]="key">{{ labels[key] || key }}</option>
+          }
+        }
+      </select></label
+    >
+    @if (filter) {
+      <label
+        >Valor
+        @if (filter === 'isActive') {
+          <select name="filterValue" [(ngModel)]="filterValue">
+            <option value="">Todos</option>
+            <option value="true">Activo</option>
+            <option value="false">Inactivo</option>
+          </select>
+        } @else {
+          <input name="filterValue" [(ngModel)]="filterValue" placeholder="Coincidencia exacta" />
+        }
+      </label>
+    }
+    <label
+      >Ordenar por<select name="sortBy" [(ngModel)]="sortBy">
+        <option value="createdAt">Creación</option>
+        @for (key of definition.columns; track key) {
+          @if (key !== 'createdAt' && key !== 'description') {
+            <option [value]="key">{{ labels[key] || key }}</option>
+          }
+        }
+      </select></label
+    ><label
+      >Orden<select name="order" [(ngModel)]="order">
+        <option value="desc">Descendente</option>
+        <option value="asc">Ascendente</option>
+      </select></label
+    ><button class="secondary" [disabled]="loading()">Aplicar</button>
+  </form>
+  <div class="table-scroll" [attr.aria-busy]="loading()">
+    <table>
+      <thead>
+        <tr>
+          @for (column of definition.columns; track column) {
+            <th>{{ labels[column] || column }}</th>
+          }
+          <th class="align-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of page()?.data; track row.id) {
+          <tr>
+            @for (column of definition.columns; track column) {
+              <td [class.name-cell]="column === 'name' || column === 'action'">
+                @if (column === 'isActive' || column === 'status') {
+                  <span
+                    class="badge"
+                    [class.inactive]="
+                      row[column] === false ||
+                      row[column] === 'INACTIVE' ||
+                      row[column] === 'ARCHIVED'
+                    "
+                    >{{ display(row[column], column) }}</span
+                  >
+                } @else {
+                  <span class="cell-value" [title]="display(row[column], column)">{{
+                    display(row[column], column)
+                  }}</span>
+                }
+              </td>
+            }
+            <td>
+              <div class="row-actions">
+                <button class="quiet-button" (click)="inspect(row)" [disabled]="saving()">
+                  Ver</button
+                ><button class="quiet-button" (click)="edit(row)" [disabled]="saving()">
+                  Editar
+                </button>
+                @if (definition.active) {
+                  <button class="quiet-button" (click)="toggle(row)" [disabled]="saving()">
+                    {{ row.isActive ? 'Desactivar' : 'Activar' }}
+                  </button>
+                }
+                <button class="danger-text" (click)="remove(row)" [disabled]="saving()">
+                  Eliminar
+                </button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="definition.columns.length + 1">
+              <div class="empty-state">
+                <span>{{ loading() ? '◌' : definition.mark }}</span>
+                <h3>{{ loading() ? 'Cargando registros…' : 'No hay registros para mostrar' }}</h3>
+                <p>
+                  {{
+                    loading()
+                      ? 'Consultando tu espacio de trabajo.'
+                      : 'Prueba otra búsqueda o crea el primer registro.'
+                  }}
+                </p>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination">
+    <label
+      >Por página<select [(ngModel)]="limit" (ngModelChange)="search()">
+        <option [ngValue]="10">10</option>
+        <option [ngValue]="20">20</option>
+        <option [ngValue]="50">50</option>
+        <option [ngValue]="100">100</option>
+      </select></label
+    ><span
+      >{{ page()?.total ?? 0 }} registros · Página {{ page()?.page ?? 1 }} de
+      {{ page()?.totalPages || 1 }}</span
+    >
+    <div class="actions">
+      <button
+        class="secondary"
+        [disabled]="loading() || !page()?.hasPreviousPage"
+        (click)="paginate(-1)"
+      >
+        ← Anterior</button
+      ><button
+        class="secondary"
+        [disabled]="loading() || !page()?.hasNextPage"
+        (click)="paginate(1)"
+      >
+        Siguiente →
+      </button>
+    </div>
+  </div>
+</section>
+@if (selected(); as record) {
+  <section class="panel detail-panel">
+    <div class="section-heading">
+      <h2>{{ record.name || record.action || 'Detalle del registro' }}</h2>
+      <button class="quiet-button" (click)="selected.set(null)">Cerrar ×</button>
+    </div>
+    <dl class="details record-details">
+      @for (entry of details(record); track entry[0]) {
+        <dt>{{ labels[entry[0]] || entry[0] }}</dt>
+        <dd>
+          <pre>{{ display(entry[1], entry[0]) }}</pre>
+        </dd>
+      }
+    </dl>
+    @if (entity === 'resources') {
+      <app-media-panel
+        kind="resource"
+        [recordId]="string(record.id)"
+        [basePath]="mediaPath(record)"
+        [resourceType]="record.type || ''"
+      />
+    }
+    @if (entity === 'users') {
+      <app-media-panel
+        kind="user-avatar"
+        [recordId]="string(record.id)"
+        [basePath]="mediaPath(record)"
+      />
+    }
+    @if (entity === 'roles') {
+      <app-role-permissions [roleId]="string(record.id)" />
+    }
+  </section>
+}
+<dialog #editor class="editor-dialog" (cancel)="saving() ? $event.preventDefault() : null">
+  <form (ngSubmit)="save()">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">{{ definition.title }}</span>
+        <h2>{{ editingId ? 'Editar' : 'Crear' }} {{ definition.singular }}</h2>
+      </div>
+      <button
+        type="button"
+        class="icon-button"
+        [disabled]="saving()"
+        aria-label="Cerrar formulario"
+        (click)="closeEditor()"
+      >
+        ×
+      </button>
+    </div>
+    @if (formError()) {
+      <div class="alert error" role="alert">{{ formError() }}</div>
+    }
+    <div class="form-grid">
+      @for (field of fields; track field.key) {
+        <label
+          [class.full-width]="field.type === 'textarea' || field.type === 'json'"
+          [class.checkbox-label]="field.type === 'boolean'"
+          >{{ field.label }} {{ field.required ? '*' : '' }}
+          @switch (field.type) {
+            @case ('boolean') {
+              <input type="checkbox" [(ngModel)]="draft[field.key]" [name]="field.key" />
+            }
+            @case ('select') {
+              <select
+                [(ngModel)]="draft[field.key]"
+                [name]="field.key"
+                [required]="!!field.required"
+              >
+                @for (option of field.options; track option) {
+                  <option [value]="option">{{ option }}</option>
+                }
+              </select>
+            }
+            @case ('textarea') {
+              <textarea
+                [(ngModel)]="draft[field.key]"
+                [name]="field.key"
+                rows="3"
+                [maxlength]="field.max || 10000"
+              ></textarea>
+            }
+            @case ('json') {
+              <textarea
+                [(ngModel)]="draft[field.key]"
+                [name]="field.key"
+                rows="5"
+                spellcheck="false"
+              ></textarea>
+            }
+            @default {
+              <input
+                [(ngModel)]="draft[field.key]"
+                [name]="field.key"
+                [type]="field.type || 'text'"
+                [required]="!!field.required"
+                [attr.maxlength]="field.max || null"
+                [attr.min]="field.type === 'number' ? 1 : null"
+                [attr.step]="field.type === 'number' ? 1 : null"
+              />
+            }
+          }
+          @if (field.hint) {
+            <small class="field-hint">{{ field.hint }}</small>
+          }
+        </label>
+      }
+    </div>
+    <div class="form-footer">
+      <button type="button" class="secondary" [disabled]="saving()" (click)="closeEditor()">
+        Cancelar</button
+      ><button class="primary" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar registro' }}
+      </button>
+    </div>
+  </form>
+</dialog>

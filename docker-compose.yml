@@ -1,0 +1,439 @@
+name: backend-auth-local
+
+x-app: &app
+  profiles: ["auth"]
+  image: backend-auth-local-app:dev
+  init: true
+  volumes:
+    - type: bind
+      source: ./database/.env
+      target: /app/database/.env
+      read_only: true
+      bind:
+        create_host_path: false
+
+x-rabbit-url: &rabbit-url "amqp://auth_local:${LOCAL_RABBIT_PASSWORD:?Run npm run env:configure}@rabbitmq:5672"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: auth_local
+      RABBITMQ_DEFAULT_PASS: ${LOCAL_RABBIT_PASSWORD:?Run npm run env:configure}
+    ports:
+      - "127.0.0.1:${RABBIT_AMQP_PORT:-5673}:5672"
+      - "127.0.0.1:${RABBIT_HTTP_PORT:-15673}:15672"
+    volumes:
+      - auth_rabbit_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  kafka:
+    image: apache/kafka:4.1.2
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${KAFKA_HOST_PORT:-19092}:9094"
+    environment:
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka:9092,EXTERNAL://localhost:${KAFKA_HOST_PORT:-19092}"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NUM_PARTITIONS: 1
+      # The official image prepares this directory for appuser; no init container.
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_HEAP_OPTS: "-Xms256m -Xmx512m"
+    volumes:
+      - auth_kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 20s
+
+  audit:
+    <<: *app
+    build:
+      context: .
+      dockerfile: Dockerfile.auth-local
+    working_dir: /app/audit-service
+    command: ["node", "dist/main.js"]
+    restart: unless-stopped
+    environment:
+      PORT: 3006
+      AUTH_SERVICE_URL: http://auth:3000
+      KAFKA_BROKER: kafka:9092
+      APPLICATION_KAFKA_TOPIC: application.events.v1
+      RABBITMQ_URL: *rabbit-url
+      AUTH_AUDIT_QUEUE: audit_queue
+      AUDIT_REJECTED_QUEUE: audit_queue.invalid
+      AUDIT_PREFETCH_COUNT: 10
+      AUDIT_RETRY_DELAY_MS: 1000
+      # [AWS S3 - Comentado / Opcional para este microservicio]
+      # S3_MEDIA_BUCKET: ${S3_MEDIA_BUCKET:-proyecto-capstone}
+      # AWS_REGION: ${AWS_REGION:-us-east-1}
+      # AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      # AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      # AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+    ports:
+      - "127.0.0.1:${AUDIT_HTTP_PORT:-3006}:3006"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3006/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  auth:
+    <<: *app
+    working_dir: /app/auth-service
+    command: ["node", "dist/main.js"]
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      JWT_SECRET: ${LOCAL_JWT_SECRET:?Run npm run env:configure}
+      JWT_ACCESS_TTL_SECONDS: 900
+      REFRESH_TOKEN_TTL_SECONDS: 2592000
+      JWT_ISSUER: auth-service
+      JWT_AUDIENCE: backend-api
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      AUTH_GOOGLE_ENABLED: ${AUTH_GOOGLE_ENABLED:-false}
+      AUTH_DEFAULT_ROLE_ID: ${AUTH_DEFAULT_ROLE_ID:-}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:4200}
+      KAFKA_BROKER: kafka:9092
+      AUTH_KAFKA_TOPIC: auth.events.v1
+      APPLICATION_KAFKA_TOPIC: application.events.v1
+      RABBITMQ_URL: *rabbit-url
+      AUTH_AUDIT_QUEUE: audit_queue
+      AUTH_BACKGROUND_JOBS_ENABLED: "true"
+      AUTH_OUTBOX_INTERVAL_MS: 1000
+      AUTH_RETENTION_DAYS: 30
+      # [AWS S3 - Comentado / Opcional para este microservicio]
+      # S3_MEDIA_BUCKET: ${S3_MEDIA_BUCKET:-proyecto-capstone}
+      # AWS_REGION: ${AWS_REGION:-us-east-1}
+      # AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      # AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      # AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+    ports:
+      - "127.0.0.1:${AUTH_HTTP_PORT:-3000}:3000"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      audit:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3000/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 6s
+      retries: 18
+      start_period: 10s
+
+  roles:
+    <<: *app
+    working_dir: /app/roles-service
+    command: ["node", "dist/main.js"]
+    restart: unless-stopped
+    environment:
+      PORT: 3001
+      AUTH_SERVICE_URL: http://auth:3000
+      KAFKA_BROKER: kafka:9092
+      APPLICATION_KAFKA_TOPIC: application.events.v1
+      RABBITMQ_URL: *rabbit-url
+      AUTH_AUDIT_QUEUE: audit_queue
+      APPLICATION_EVENTS_ENABLED: "true"
+      APPLICATION_OUTBOX_INTERVAL_MS: 1000
+      BROKER_RPC_ENABLED: "true"
+      BROKER_RPC_TIMEOUT_MS: 30000
+      AUTH_RPC_TRANSPORT: rabbit
+      # [AWS S3 - Comentado / Opcional para este microservicio]
+      # S3_MEDIA_BUCKET: ${S3_MEDIA_BUCKET:-proyecto-capstone}
+      # AWS_REGION: ${AWS_REGION:-us-east-1}
+      # AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      # AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      # AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+    ports:
+      - "127.0.0.1:${ROLES_HTTP_PORT:-3001}:3001"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3001/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  permissions:
+    <<: *app
+    working_dir: /app/permissions-service
+    command: ["node", "dist/main.js"]
+    restart: unless-stopped
+    environment:
+      PORT: 3002
+      AUTH_SERVICE_URL: http://auth:3000
+      KAFKA_BROKER: kafka:9092
+      APPLICATION_KAFKA_TOPIC: application.events.v1
+      RABBITMQ_URL: *rabbit-url
+      AUTH_AUDIT_QUEUE: audit_queue
+      APPLICATION_EVENTS_ENABLED: "true"
+      APPLICATION_OUTBOX_INTERVAL_MS: 1000
+      BROKER_RPC_ENABLED: "true"
+      BROKER_RPC_TIMEOUT_MS: 30000
+      AUTH_RPC_TRANSPORT: rabbit
+      # [AWS S3 - Comentado / Opcional para este microservicio]
+      # S3_MEDIA_BUCKET: ${S3_MEDIA_BUCKET:-proyecto-capstone}
+      # AWS_REGION: ${AWS_REGION:-us-east-1}
+      # AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      # AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      # AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+    ports:
+      - "127.0.0.1:${PERMISSIONS_HTTP_PORT:-3002}:3002"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3002/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  s3:
+    <<: *app
+    user: "0:0"
+    working_dir: /app
+    command: ["node", "scripts/local-s3.cjs"]
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: ./database/.env
+        target: /app/database/.env
+        read_only: true
+      - type: bind
+        source: ./scripts/local-s3.cjs
+        target: /app/scripts/local-s3.cjs
+        read_only: true
+      - s3_storage:/app/local-storage
+    environment:
+      S3_PORT: 9000
+    ports:
+      - "127.0.0.1:9000:9000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:9000/').then(r=>process.exit([200, 404].includes(r.status)?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  resources:
+    <<: *app
+    working_dir: /app/resources-service
+    command: ["node", "dist/main.js"]
+    restart: unless-stopped
+    environment:
+      PORT: 3003
+      AUTH_SERVICE_URL: http://auth:3000
+      KAFKA_BROKER: kafka:9092
+      APPLICATION_KAFKA_TOPIC: application.events.v1
+      RABBITMQ_URL: *rabbit-url
+      AUTH_AUDIT_QUEUE: audit_queue
+      APPLICATION_EVENTS_ENABLED: "true"
+      APPLICATION_OUTBOX_INTERVAL_MS: 1000
+      BROKER_RPC_ENABLED: "true"
+      BROKER_RPC_TIMEOUT_MS: 30000
+      AUTH_RPC_TRANSPORT: rabbit
+      # [S3 - Modo Local con scripts/local-s3.cjs]
+      # S3_MEDIA_BUCKET: capstone-media
+      # AWS_REGION: us-east-1
+      # AWS_ACCESS_KEY_ID: local-test
+      # AWS_SECRET_ACCESS_KEY: local-test
+      # S3_ENDPOINT: http://s3:9000
+      # [S3 - Modo Real AWS S3 ACTIVO]
+      S3_MEDIA_BUCKET: ${S3_MEDIA_BUCKET:-proyecto-capstone}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+    ports:
+      - "127.0.0.1:${RESOURCES_HTTP_PORT:-3003}:3003"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3003/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  areas:
+    <<: *app
+    working_dir: /app/areas-service
+    command: ["node", "dist/main.js"]
+    restart: unless-stopped
+    environment:
+      PORT: 3004
+      AUTH_SERVICE_URL: http://auth:3000
+      KAFKA_BROKER: kafka:9092
+      APPLICATION_KAFKA_TOPIC: application.events.v1
+      RABBITMQ_URL: *rabbit-url
+      AUTH_AUDIT_QUEUE: audit_queue
+      APPLICATION_EVENTS_ENABLED: "true"
+      APPLICATION_OUTBOX_INTERVAL_MS: 1000
+      BROKER_RPC_ENABLED: "true"
+      BROKER_RPC_TIMEOUT_MS: 30000
+      AUTH_RPC_TRANSPORT: rabbit
+      # [AWS S3 - Comentado / Opcional para este microservicio]
+      # S3_MEDIA_BUCKET: ${S3_MEDIA_BUCKET:-proyecto-capstone}
+      # AWS_REGION: ${AWS_REGION:-us-east-1}
+      # AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      # AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      # AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+    ports:
+      - "127.0.0.1:${AREAS_HTTP_PORT:-3004}:3004"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3004/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  users:
+    <<: *app
+    working_dir: /app/users-service
+    command: ["node", "dist/main.js"]
+    restart: unless-stopped
+    environment:
+      PORT: 3005
+      AUTH_SERVICE_URL: http://auth:3000
+      KAFKA_BROKER: kafka:9092
+      APPLICATION_KAFKA_TOPIC: application.events.v1
+      RABBITMQ_URL: *rabbit-url
+      AUTH_AUDIT_QUEUE: audit_queue
+      APPLICATION_EVENTS_ENABLED: "true"
+      APPLICATION_OUTBOX_INTERVAL_MS: 1000
+      BROKER_RPC_ENABLED: "true"
+      BROKER_RPC_TIMEOUT_MS: 30000
+      AUTH_RPC_TRANSPORT: rabbit
+      # [S3 - Modo Local con scripts/local-s3.cjs]
+      # S3_MEDIA_BUCKET: capstone-media
+      # AWS_REGION: us-east-1
+      # AWS_ACCESS_KEY_ID: local-test
+      # AWS_SECRET_ACCESS_KEY: local-test
+      # S3_ENDPOINT: http://s3:9000
+      # [S3 - Modo Real AWS S3 ACTIVO]
+      S3_MEDIA_BUCKET: ${S3_MEDIA_BUCKET:-proyecto-capstone}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+    ports:
+      - "127.0.0.1:${USERS_HTTP_PORT:-3005}:3005"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3005/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  auth_rabbit_data:
+  auth_kafka_data:
+  s3_storage:

@@ -1,0 +1,72 @@
+FROM node:22-bookworm-slim
+WORKDIR /app
+COPY database/package*.json ./database/
+COPY database/src ./database/src
+COPY database/tsconfig*.json ./database/
+COPY database/drizzle ./database/drizzle
+RUN npm ci --prefix database --no-audit --no-fund && \
+    npm run build --prefix database && \
+    npm prune --prefix database --omit=dev && \
+    npm cache clean --force
+
+COPY auth-service/package*.json ./auth-service/
+COPY auth-service/src ./auth-service/src
+COPY auth-service/tsconfig*.json auth-service/nest-cli.json ./auth-service/
+RUN npm ci --prefix auth-service --no-audit --no-fund && \
+    npm run build --prefix auth-service && \
+    npm prune --prefix auth-service --omit=dev && \
+    npm cache clean --force
+
+COPY audit-service/package*.json ./audit-service/
+COPY audit-service/src ./audit-service/src
+COPY audit-service/tsconfig*.json audit-service/nest-cli.json ./audit-service/
+RUN npm ci --prefix audit-service --no-audit --no-fund && \
+    npm run build --prefix audit-service && \
+    npm prune --prefix audit-service --omit=dev && \
+    npm cache clean --force
+
+COPY roles-service/package*.json ./roles-service/
+COPY roles-service/src ./roles-service/src
+COPY roles-service/tsconfig*.json roles-service/nest-cli.json ./roles-service/
+RUN npm ci --prefix roles-service --no-audit --no-fund && \
+    npm run build --prefix roles-service && \
+    npm prune --prefix roles-service --omit=dev && \
+    npm cache clean --force
+
+COPY permissions-service/package*.json ./permissions-service/
+COPY permissions-service/src ./permissions-service/src
+COPY permissions-service/tsconfig*.json permissions-service/nest-cli.json ./permissions-service/
+RUN npm ci --prefix permissions-service --no-audit --no-fund && \
+    npm run build --prefix permissions-service && \
+    npm prune --prefix permissions-service --omit=dev && \
+    npm cache clean --force
+
+COPY resources-service/package*.json ./resources-service/
+COPY resources-service/src ./resources-service/src
+COPY resources-service/tsconfig*.json resources-service/nest-cli.json ./resources-service/
+RUN npm ci --prefix resources-service --no-audit --no-fund && \
+    npm run build --prefix resources-service && \
+    npm prune --prefix resources-service --omit=dev && \
+    npm cache clean --force
+
+COPY areas-service/package*.json ./areas-service/
+COPY areas-service/src ./areas-service/src
+COPY areas-service/tsconfig*.json areas-service/nest-cli.json ./areas-service/
+RUN npm ci --prefix areas-service --no-audit --no-fund && \
+    npm run build --prefix areas-service && \
+    npm prune --prefix areas-service --omit=dev && \
+    npm cache clean --force
+
+COPY users-service/package*.json ./users-service/
+COPY users-service/src ./users-service/src
+COPY users-service/tsconfig*.json users-service/nest-cli.json ./users-service/
+RUN npm ci --prefix users-service --no-audit --no-fund && \
+    npm run build --prefix users-service && \
+    npm prune --prefix users-service --omit=dev && \
+    npm cache clean --force
+
+COPY scripts/local ./scripts/local
+ENV NODE_ENV=production
+USER node
+WORKDIR /app/auth-service
+CMD ["node", "dist/main.js"]

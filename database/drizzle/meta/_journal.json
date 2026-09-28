@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790102454241,
+      "tag": "0000_silky_mandroid",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790142592567,
+      "tag": "0001_auth_sessions_outbox",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790142592568,
+      "tag": "0002_resource_images",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790142592569,
+      "tag": "0003_application_audit",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790142592570,
+      "tag": "0004_broker_commands",
+      "breakpoints": true
+    }
+  ]
+}
